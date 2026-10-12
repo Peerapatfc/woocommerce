@@ -112,7 +112,9 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		add_filter( 'get_block_file_template', array( $this, 'get_block_file_template'), 10, 3 );
+		// Lazy-load template content for 'woocommerce//slug' templates (registry fallback path).
+		// BlockTemplatesController::get_block_file_template covers 'woocommerce/woocommerce//slug' separately.
+		add_filter( 'get_block_file_template', array( $this, 'get_block_file_template' ), 10, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
