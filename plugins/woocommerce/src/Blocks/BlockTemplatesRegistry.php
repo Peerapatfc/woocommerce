@@ -97,8 +97,7 @@ class BlockTemplatesRegistry {
 		foreach ( $templates as $template ) {
 			$template->init();
 
-			// Taxonomy templates are registered automatically by WordPress and
-			// are made available through the Add Template menu.
+			// Taxonomy templates are registered automatically by WordPress and are added through the Add Template menu.
 			if ( ! $template->is_taxonomy_template ) {
 				$template_name                          = 'woocommerce//' . $template::SLUG;
 				$this->template_paths[ $template_name ] = $directory . '/' . $template::SLUG . '.html';
