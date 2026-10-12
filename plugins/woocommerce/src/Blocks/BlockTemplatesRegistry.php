@@ -49,6 +49,7 @@ class BlockTemplatesRegistry {
 	 * Initialization method.
 	 */
 	public function init() {
+		$templates = array();
 		if ( BlockTemplateUtils::supports_block_templates( 'wp_template' ) ) {
 			$templates = array(
 				ProductCatalogTemplate::SLUG       => new ProductCatalogTemplate(),
@@ -62,10 +63,10 @@ class BlockTemplatesRegistry {
 				OrderConfirmationTemplate::SLUG    => new OrderConfirmationTemplate(),
 				SingleProductTemplate::SLUG        => new SingleProductTemplate(),
 			);
-		} else {
-			$templates = array();
 		}
 		$templates[ ComingSoonTemplate::SLUG ] = new ComingSoonTemplate();
+
+		$template_parts = array();
 		if ( BlockTemplateUtils::supports_block_templates( 'wp_template_part' ) ) {
 			$template_parts = array(
 				MiniCartTemplate::SLUG       => new MiniCartTemplate(),
@@ -89,8 +90,6 @@ class BlockTemplatesRegistry {
 					}
 				}
 			}
-		} else {
-			$template_parts = array();
 		}
 
 		// Init all templates. Content is loaded lazily via the get_block_file_template filter.
