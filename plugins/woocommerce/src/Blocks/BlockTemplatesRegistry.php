@@ -39,9 +39,9 @@ class BlockTemplatesRegistry {
 	private $templates = array();
 
 	/**
-	 * Maps registered template name ('woocommerce//slug') to its HTML file path.
+	 * Authoritative map for registered template name ('woocommerce//slug') to its HTML file path.
 	 *
-	 * @var array<string, string>
+	 * @var array<string,string>
 	 */
 	private $template_paths = array();
 
@@ -112,7 +112,7 @@ class BlockTemplatesRegistry {
 		}
 		// Lazy-load template content for 'woocommerce//slug' templates (registry fallback path).
 		// BlockTemplatesController::get_block_file_template covers 'woocommerce/woocommerce//slug' separately.
-		add_filter( 'get_block_file_template', array( $this, 'get_block_file_template' ), 10, 3 );
+		add_filter( 'get_block_templates', array( $this, 'populate_block_file_template_contents'), 10, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -139,27 +139,25 @@ class BlockTemplatesRegistry {
 	}
 
 	/**
-	 * Lazily inject template content when WordPress resolves a registered WooCommerce template.
+	 * Lazily inject template content into query results (covers resolve_block_template path).
 	 *
 	 * @since 11.3.0
 	 *
-	 * @param \WP_Block_Template|null $block_template The found block template, or null.
-	 * @param string                  $id             Template unique identifier (e.g. 'theme_slug//template_slug').
-	 * @param string                  $template_type  Template type.
-	 * @return \WP_Block_Template|null
+	 * @param \WP_Block_Template[] $templates     Array of found block templates.
+	 * @param array                $query         Query arguments.
+	 * @param string               $template_type Template type.
+	 * @return \WP_Block_Template[]
 	 */
-	public function get_block_file_template( $block_template, $id, $template_type ) {
-		$template_path = $this->template_paths[ $id ] ?? null;
-		if ( null !== $template_path && '' === $block_template->content ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$block_template->content = apply_block_hooks_to_content(
-				(string) file_get_contents( $template_path ),
-				$block_template,
-				'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
-			);
+	public function populate_block_file_template_contents( $templates, $query, $template_type ) {
+		foreach ( $templates as $template ) {
+			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
+			if ( null !== $template_path && '' === $template->content ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+				$template->content = (string) file_get_contents( $template_path );
+			}
 		}
 
-		return $block_template;
+		return $templates;
 	}
 
 	/**
