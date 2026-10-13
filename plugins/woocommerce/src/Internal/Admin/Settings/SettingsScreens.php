@@ -19,11 +19,6 @@ defined( 'ABSPATH' ) || exit;
 final class SettingsScreens {
 
 	/**
-	 * Areas that screens can be registered in.
-	 */
-	private const AREAS = array( 'payments' );
-
-	/**
 	 * Get the valid registered screens, keyed by area and then by screen ID.
 	 *
 	 * @since 11.3.0
@@ -48,11 +43,11 @@ final class SettingsScreens {
 		}
 
 		$valid = array();
-		foreach ( self::AREAS as $area ) {
-			if ( ! isset( $screens[ $area ] ) || ! is_array( $screens[ $area ] ) ) {
+		foreach ( $screens as $area => $area_screens ) {
+			if ( ! self::is_valid_key( $area ) || ! is_array( $area_screens ) ) {
 				continue;
 			}
-			foreach ( $screens[ $area ] as $id => $screen ) {
+			foreach ( $area_screens as $id => $screen ) {
 				$normalized = self::normalize_screen( $area, $id, $screen );
 				if ( null !== $normalized ) {
 					$valid[ $area ][ $normalized['id'] ] = $normalized;
@@ -97,7 +92,7 @@ final class SettingsScreens {
 	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
 	 */
 	private static function normalize_screen( string $area, $id, $screen ): ?array {
-		if ( ! is_string( $id ) || sanitize_key( $id ) !== $id || '' === $id || ! is_array( $screen ) ) {
+		if ( ! self::is_valid_key( $id ) || ! is_array( $screen ) ) {
 			return null;
 		}
 
@@ -117,5 +112,17 @@ final class SettingsScreens {
 			'rest_path' => $rest_path,
 			'scripts'   => $scripts,
 		);
+	}
+
+	/**
+	 * Whether an area or screen ID is a non-empty, lowercase key that can be used in URLs and hook names.
+	 *
+	 * @param mixed $key The key.
+	 * @return bool
+	 *
+	 * @phpstan-assert-if-true string $key
+	 */
+	private static function is_valid_key( $key ): bool {
+		return is_string( $key ) && '' !== $key && sanitize_key( $key ) === $key;
 	}
 }

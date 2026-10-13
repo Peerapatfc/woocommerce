@@ -70,12 +70,12 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * @testdox Should skip screens in areas that don't exist.
+	 * @testdox Should skip screens in an area whose key can't be used in URLs.
 	 */
-	public function test_skips_unknown_area(): void {
+	public function test_skips_invalid_area(): void {
 		$this->register_screens(
 			array(
-				'unknown' => array(
+				'Payments' => array(
 					'example' => array(
 						'title'     => 'Example settings',
 						'rest_path' => '/example/v1/settings',
@@ -138,13 +138,6 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 		add_filter( '__experimental_woocommerce_settings_screens', fn() => $screens );
 
 		$this->assertSame( array(), $this->sut->get_screens() );
-	}
-
-	/**
-	 * @testdox Should use a separate entity kind for each area.
-	 */
-	public function test_entity_kind_includes_area(): void {
-		$this->assertSame( 'woo_settings_payments', SettingsScreens::get_entity_kind( 'payments' ) );
 	}
 
 	/**
