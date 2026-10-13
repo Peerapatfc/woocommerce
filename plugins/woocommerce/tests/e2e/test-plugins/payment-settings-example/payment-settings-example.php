@@ -69,7 +69,7 @@ add_action(
 );
 
 add_action(
-	'fields_api_init',
+	'wp_fields_api_init',
 	static function ( $registry ) {
 		$registry->register(
 			'payment-settings-example',
