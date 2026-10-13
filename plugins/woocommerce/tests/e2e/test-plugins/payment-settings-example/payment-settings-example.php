@@ -29,7 +29,7 @@ add_action(
 			'payment-settings-example/v1',
 			'/settings',
 			array(
-				'methods'             => array( 'GET', 'POST', 'PUT' ),
+				'methods'             => array( 'GET', 'POST' ),
 				'permission_callback' => static fn() => current_user_can( 'manage_woocommerce' ),
 				'callback'            => static function ( WP_REST_Request $request ) {
 					$defaults = array(

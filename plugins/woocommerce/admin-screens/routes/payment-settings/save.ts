@@ -3,25 +3,23 @@
  */
 import { store as coreStore } from '@wordpress/core-data';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 import { useState } from 'react';
 
 /**
  * Internal dependencies
  */
-import { saveAndReload } from './save-and-reload';
-import type { SaveNotice } from './save-and-reload';
-import { NO_KEY } from './screen';
+import { NO_KEY, toError } from './screen';
 import type { SettingsScreen, SettingsRecord } from './screen';
 
-// Every store has these metadata selectors and actions, but core-data's types leave them out.
+export interface SaveNotice {
+	status: 'success' | 'error';
+	message: string;
+}
+
+// Every store has this metadata selector, but core-data's types leave it out.
 interface ResolutionSelectors {
 	getResolutionError: ( selector: string, args: unknown[] ) => unknown;
-}
-interface ResolutionActions {
-	invalidateResolution: (
-		selector: string,
-		args: unknown[]
-	) => Promise< void >;
 }
 
 /**
@@ -52,9 +50,6 @@ export function useSettingsEntity( screen: SettingsScreen ) {
 	);
 	const { editEntityRecord, saveEditedEntityRecord } =
 		useDispatch( coreStore );
-	const { invalidateResolution } = useDispatch(
-		coreStore
-	) as unknown as ResolutionActions;
 
 	const edit = ( edits: SettingsRecord ) => {
 		if ( isSaving ) {
@@ -69,22 +64,24 @@ export function useSettingsEntity( screen: SettingsScreen ) {
 			return;
 		}
 		setNotice( undefined );
-		setNotice(
-			await saveAndReload( {
-				save: () =>
-					saveEditedEntityRecord( kind, name, NO_KEY, {
-						throwOnError: true,
-					} ),
-				reload: async () => {
-					await invalidateResolution( 'getEntityRecord', [
-						kind,
-						name,
-						NO_KEY,
-					] );
-					// Selecting the record again resolves it from the server.
-				},
-			} )
-		);
+		try {
+			// core-data stores the record the server returns, so the page shows what was saved.
+			await saveEditedEntityRecord( kind, name, NO_KEY, {
+				throwOnError: true,
+			} );
+			setNotice( {
+				status: 'success',
+				message: __( 'Settings saved.', 'woocommerce' ),
+			} );
+		} catch ( error ) {
+			setNotice( {
+				status: 'error',
+				message: toError(
+					error,
+					__( 'Unable to save settings.', 'woocommerce' )
+				).message,
+			} );
+		}
 	};
 
 	const discard = () => {
