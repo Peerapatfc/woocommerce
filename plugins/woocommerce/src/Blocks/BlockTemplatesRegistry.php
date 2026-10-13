@@ -110,9 +110,9 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		// Lazy-load template content for 'woocommerce//slug' templates (registry fallback path).
-		// BlockTemplatesController::get_block_file_template covers 'woocommerce/woocommerce//slug' separately.
-		add_filter( 'get_block_templates', array( $this, 'populate_block_file_template_contents'), 10, 3 );
+		// Lazy-load template content for 'woocommerce//slug' (secondary path, registry fallback - must run second, hence priority is 11).
+		// Primary resolution is BlockTemplatesController::get_block_file_template ('woocommerce/woocommerce//slug').
+		add_filter( 'get_block_templates', array( $this, 'populate_block_file_template_contents' ), 11, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
