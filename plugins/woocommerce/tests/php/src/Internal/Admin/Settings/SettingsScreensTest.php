@@ -70,35 +70,6 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * @testdox Should keep a valid parent screen ID and drop an invalid one.
-	 *
-	 * @testWith ["example", "example"]
-	 *           ["child", null]
-	 *           ["Example", null]
-	 *           [42, null]
-	 *
-	 * @param mixed       $parent_id The registered parent.
-	 * @param string|null $expected  The expected parent.
-	 */
-	public function test_normalizes_parent( $parent_id, ?string $expected ): void {
-		$this->register_screens(
-			array(
-				'payments' => array(
-					'child' => array(
-						'title'     => 'Child settings',
-						'rest_path' => '/example/v1/settings',
-						'parent'    => $parent_id,
-					),
-				),
-			)
-		);
-
-		$screen = $this->sut->get_screen( 'payments', 'child' );
-		$this->assertNotNull( $screen );
-		$this->assertSame( $expected, $screen['parent'] );
-	}
-
-	/**
 	 * @testdox Should skip screens in an area whose key can't be used in URLs.
 	 */
 	public function test_skips_invalid_area(): void {

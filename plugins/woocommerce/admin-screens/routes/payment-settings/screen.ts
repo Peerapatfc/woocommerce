@@ -12,9 +12,10 @@ export type SettingsRecord = Record< string, unknown >;
 // Settings entities have no record key (`key: false`), but core-data's types require one.
 export const NO_KEY = undefined as unknown as string;
 
+// An absolute URL in `to` makes Core's Breadcrumbs render a plain link, which reloads the page.
 export interface Breadcrumb {
 	label: string;
-	url?: string;
+	to?: string;
 }
 
 export interface SettingsScreen {

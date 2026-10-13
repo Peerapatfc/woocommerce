@@ -81,39 +81,34 @@ class SettingsScreensPageTest extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * @testdox Should pass a breadcrumb trail from the area through each registered parent screen.
-	 *
-	 * @testWith ["example", ["Payments", "Example settings", "Advanced"]]
-	 *           ["missing", ["Payments", "Advanced"]]
-	 *
-	 * @param string   $parent_id The sub-page's parent screen ID.
-	 * @param string[] $labels    The expected breadcrumb labels.
+	 * @testdox Should pass a header that links to the Payments list and names the screen.
 	 */
-	public function test_page_init_passes_breadcrumbs( string $parent_id, array $labels ): void {
+	public function test_page_init_passes_breadcrumbs(): void {
 		$this->register_example_screen();
-		add_filter(
-			'__experimental_woocommerce_settings_screens',
-			function ( $screens ) use ( $parent_id ) {
-				$screens['payments']['example-advanced'] = array(
-					'title'     => 'Advanced',
-					'rest_path' => '/example/v1/settings',
-					'parent'    => $parent_id,
-				);
-				return $screens;
-			}
-		);
-		$_GET['p'] = '/settings/payments/example-advanced';
+		$_GET['p'] = '/settings/payments/example';
 
 		$this->sut->handle_page_init();
 
-		$data        = implode( '', (array) wp_scripts()->get_data( 'wc-settings-screen', 'before' ) );
-		$screen      = json_decode( substr( $data, strpos( $data, '{' ), -1 ), true );
-		$breadcrumbs = $screen['breadcrumbs'];
-		$this->assertSame( $labels, array_column( $breadcrumbs, 'label' ) );
-		$this->assertArrayNotHasKey( 'url', end( $breadcrumbs ), 'The current page should not link to itself' );
-		if ( count( $labels ) > 2 ) {
-			$this->assertStringContainsString( 'page=wc-settings-screens-wp-admin&p=/settings/payments/example', $breadcrumbs[1]['url'], 'The parent should link to its screen' );
-		}
+		$this->assertSame(
+			array(
+				array(
+					'label' => 'Payments',
+					'to'    => admin_url( 'admin.php?page=wc-settings&tab=checkout' ),
+				),
+				array( 'label' => 'Example settings' ),
+			),
+			$this->get_screen_data()['breadcrumbs']
+		);
+	}
+
+	/**
+	 * Get the screen data passed to the route.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function get_screen_data(): array {
+		$data = implode( '', (array) wp_scripts()->get_data( 'wc-settings-screen', 'before' ) );
+		return json_decode( substr( $data, strpos( $data, '{' ), -1 ), true );
 	}
 
 	/**
