@@ -168,10 +168,6 @@ class BlockTemplatesRegistry {
 	 * @return AbstractTemplate|AbstractTemplatePart|null
 	 */
 	public function get_template( $template_slug ) {
-		if ( array_key_exists( $template_slug, $this->templates ) ) {
-			$registered_template = $this->templates[ $template_slug ];
-			return $registered_template;
-		}
-		return null;
+		return $this->templates[$template_slug] ?? null;
 	}
 }
