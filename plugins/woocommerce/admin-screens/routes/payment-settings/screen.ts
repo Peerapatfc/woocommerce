@@ -12,10 +12,16 @@ export type SettingsRecord = Record< string, unknown >;
 // Settings entities have no record key (`key: false`), but core-data's types require one.
 export const NO_KEY = undefined as unknown as string;
 
+export interface Breadcrumb {
+	label: string;
+	url?: string;
+}
+
 export interface SettingsScreen {
 	area: string;
 	id: string;
 	title: string;
+	breadcrumbs: Breadcrumb[];
 	entity: { kind: string; name: string; baseURL: string };
 }
 

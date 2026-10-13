@@ -96,6 +96,7 @@ describe( 'getScreen', () => {
 		area: 'payments',
 		id: 'example',
 		title: 'Example',
+		breadcrumbs: [ { label: 'Example' } ],
 		entity: {
 			kind: 'woo_settings_payments',
 			name: 'example',

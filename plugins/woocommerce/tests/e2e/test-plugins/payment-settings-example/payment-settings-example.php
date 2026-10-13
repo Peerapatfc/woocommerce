@@ -10,13 +10,18 @@ declare( strict_types=1 );
 
 defined( 'ABSPATH' ) || exit;
 
-// The screen, entity and endpoint used by the example.
+// The screens, entities and endpoint used by the example. The advanced screen is a sub-page of the main one.
 add_filter(
 	'__experimental_woocommerce_settings_screens',
 	static function ( $screens ) {
-		$screens['payments']['example'] = array(
+		$screens['payments']['example']          = array(
 			'title'     => 'Example gateway settings',
 			'rest_path' => '/payment-settings-example/v1/settings',
+		);
+		$screens['payments']['example-advanced'] = array(
+			'title'     => 'Advanced settings',
+			'rest_path' => '/payment-settings-example/v1/settings',
+			'parent'    => 'example',
 		);
 		return $screens;
 	}
@@ -37,6 +42,7 @@ add_action(
 						'title'   => 'Example payments',
 						'mode'    => 'live',
 						'email'   => '',
+						'debug'   => false,
 					);
 					$settings = array_merge( $defaults, (array) get_option( 'payment_settings_example', array() ) );
 					if ( 'GET' === $request->get_method() ) {
@@ -49,7 +55,7 @@ add_action(
 					}
 					foreach ( array_keys( $defaults ) as $key ) {
 						if ( array_key_exists( $key, $params ) ) {
-							$settings[ $key ] = 'enabled' === $key ? (bool) $params[ $key ] : sanitize_text_field( (string) $params[ $key ] );
+							$settings[ $key ] = is_bool( $defaults[ $key ] ) ? (bool) $params[ $key ] : sanitize_text_field( (string) $params[ $key ] );
 						}
 					}
 					update_option( 'payment_settings_example', $settings );
@@ -111,6 +117,19 @@ add_action(
 			),
 			'payment-settings-example/fields'
 		);
+		$registry->register(
+			'payment-settings-example',
+			'woo_settings_payments',
+			'example-advanced',
+			array(
+				array(
+					'id'    => 'debug',
+					'type'  => 'boolean',
+					'label' => 'Log debug messages',
+					'Edit'  => 'toggle',
+				),
+			)
+		);
 	}
 );
 
@@ -144,5 +163,15 @@ add_filter(
 			),
 			1
 		);
+	}
+);
+
+add_filter(
+	'get_entity_view_config_woo_settings_payments_example-advanced',
+	static function ( $config ) {
+		if ( ! is_object( $config ) || ! is_callable( array( $config, 'merge' ) ) ) {
+			return $config;
+		}
+		return $config->merge( array( 'form' => array( 'fields' => array( 'debug' ) ) ), 1 );
 	}
 );

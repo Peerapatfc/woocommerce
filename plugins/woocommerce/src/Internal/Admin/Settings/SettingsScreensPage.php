@@ -123,10 +123,11 @@ class SettingsScreensPage {
 			self::DATA_SCRIPT_HANDLE,
 			'window.wcSettingsScreen = ' . wp_json_encode(
 				array(
-					'area'   => $screen['area'],
-					'id'     => $screen['id'],
-					'title'  => $screen['title'],
-					'entity' => array(
+					'area'        => $screen['area'],
+					'id'          => $screen['id'],
+					'title'       => $screen['title'],
+					'breadcrumbs' => $this->get_breadcrumbs( $screen ),
+					'entity'      => array(
 						'kind'    => SettingsScreens::get_entity_kind( $screen['area'] ),
 						'name'    => $screen['id'],
 						'baseURL' => $screen['rest_path'],
@@ -222,7 +223,7 @@ class SettingsScreensPage {
 	/**
 	 * Get the screen named in the route, such as `p=/settings/payments/woopayments`.
 	 *
-	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
+	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[], parent: string|null}|null
 	 */
 	private function get_requested_screen(): ?array {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only selects which screen to load.
@@ -232,6 +233,60 @@ class SettingsScreensPage {
 		}
 
 		return $this->screens->get_screen( $matches[1], $matches[2] );
+	}
+
+	/**
+	 * Get the breadcrumb trail for a screen: its area, each parent screen, then the screen itself.
+	 *
+	 * @param array{area: string, id: string, title: string, rest_path: string, scripts: string[], parent: string|null} $screen The screen.
+	 * @return array<int, array{label: string, url?: string}>
+	 */
+	private function get_breadcrumbs( array $screen ): array {
+		$area_screens = $this->screens->get_screens()[ $screen['area'] ] ?? array();
+		$items        = array( array( 'label' => $screen['title'] ) );
+		$visited      = array( $screen['id'] => true );
+		$parent       = $screen['parent'];
+		while ( null !== $parent && isset( $area_screens[ $parent ] ) && ! isset( $visited[ $parent ] ) ) {
+			$parent_screen = $area_screens[ $parent ];
+			array_unshift(
+				$items,
+				array(
+					'label' => $parent_screen['title'],
+					'url'   => $this->get_screen_url( $parent_screen['area'], $parent_screen['id'] ),
+				)
+			);
+			$visited[ $parent ] = true;
+			$parent             = $parent_screen['parent'];
+		}
+
+		if ( 'payments' === $screen['area'] ) {
+			array_unshift(
+				$items,
+				array(
+					'label' => __( 'Payments', 'woocommerce' ),
+					'url'   => admin_url( 'admin.php?page=wc-settings&tab=checkout' ),
+				)
+			);
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Get the URL of a screen.
+	 *
+	 * @param string $area The screen's area.
+	 * @param string $id   The screen ID.
+	 * @return string
+	 */
+	private function get_screen_url( string $area, string $id ): string {
+		return add_query_arg(
+			array(
+				'page' => self::PAGE_SLUG,
+				'p'    => '/settings/' . $area . '/' . $id,
+			),
+			admin_url( 'admin.php' )
+		);
 	}
 
 	/**

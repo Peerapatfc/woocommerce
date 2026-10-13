@@ -23,15 +23,16 @@ final class SettingsScreens {
 	 *
 	 * @since 11.3.0
 	 *
-	 * @return array<string, array<string, array{area: string, id: string, title: string, rest_path: string, scripts: string[]}>>
+	 * @return array<string, array<string, array{area: string, id: string, title: string, rest_path: string, scripts: string[], parent: string|null}>>
 	 */
 	public function get_screens(): array {
 		/**
 		 * Filters the settings screens. Experimental: the format can change in any release.
 		 *
 		 * Screens are keyed by area (such as `payments`) and then by screen ID. Each screen has a
-		 * `title`, the `rest_path` of its settings entity, and optional `scripts` (script handles to
-		 * load on the screen).
+		 * `title`, the `rest_path` of its settings entity, optional `scripts` (script handles to
+		 * load on the screen), and an optional `parent` (another screen's ID in the same area),
+		 * which shows the screen as a sub-page of that screen in the breadcrumbs.
 		 *
 		 * @since 11.3.0
 		 *
@@ -65,7 +66,7 @@ final class SettingsScreens {
 	 *
 	 * @param string $area The area.
 	 * @param string $id   The screen ID.
-	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
+	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[], parent: string|null}|null
 	 */
 	public function get_screen( string $area, string $id ): ?array {
 		return $this->get_screens()[ $area ][ $id ] ?? null;
@@ -89,7 +90,7 @@ final class SettingsScreens {
 	 * @param string $area   The area.
 	 * @param mixed  $id     The screen ID.
 	 * @param mixed  $screen The screen arguments.
-	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
+	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[], parent: string|null}|null
 	 */
 	private static function normalize_screen( string $area, $id, $screen ): ?array {
 		if ( ! self::is_valid_key( $id ) || ! is_array( $screen ) ) {
@@ -105,12 +106,15 @@ final class SettingsScreens {
 		$scripts = $screen['scripts'] ?? array();
 		$scripts = is_array( $scripts ) ? array_values( array_filter( $scripts, 'is_string' ) ) : array();
 
+		$parent = $screen['parent'] ?? null;
+
 		return array(
 			'area'      => $area,
 			'id'        => $id,
 			'title'     => $title,
 			'rest_path' => $rest_path,
 			'scripts'   => $scripts,
+			'parent'    => self::is_valid_key( $parent ) && $parent !== $id ? $parent : null,
 		);
 	}
 

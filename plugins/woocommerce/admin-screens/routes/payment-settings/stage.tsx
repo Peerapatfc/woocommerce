@@ -12,8 +12,29 @@ import { useParams } from '@wordpress/route';
  */
 import { useSettingsEntity } from './save';
 import { AREA, getScreen, useScreenDefinition } from './screen';
-import type { SettingsScreen, ScreenDefinition } from './screen';
+import type { Breadcrumb, SettingsScreen, ScreenDefinition } from './screen';
 import './style.scss';
+
+// Plain links, not router links: the page only has the data of the screen it was loaded for.
+function ScreenBreadcrumbs( { items }: { items: Breadcrumb[] } ) {
+	return (
+		<nav aria-label={ __( 'Breadcrumbs', 'woocommerce' ) }>
+			<ol className="wc-settings-screen__breadcrumbs">
+				{ items.map( ( item, index ) => (
+					<li key={ index }>
+						{ index === items.length - 1 ? (
+							<h1 className="wc-settings-screen__breadcrumbs-current">
+								{ item.label }
+							</h1>
+						) : (
+							<a href={ item.url }>{ item.label }</a>
+						) }
+					</li>
+				) ) }
+			</ol>
+		</nav>
+	);
+}
 
 function LoadError( { error }: { error: Error } ) {
 	return (
@@ -59,7 +80,8 @@ function SettingsForm( {
 	const canSave = isDirty && isValid && definition.errors.length === 0;
 	return (
 		<Page
-			title={ screen.title }
+			ariaLabel={ screen.title }
+			breadcrumbs={ <ScreenBreadcrumbs items={ screen.breadcrumbs } /> }
 			showSidebarToggle={ false }
 			hasPadding
 			actions={
