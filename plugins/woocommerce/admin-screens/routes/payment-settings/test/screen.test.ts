@@ -118,7 +118,6 @@ describe( 'getScreen', () => {
 	it.each( [
 		[ 'another area', 'emails', 'example' ],
 		[ 'another ID', 'payments', 'other' ],
-		[ 'a missing area', undefined, 'example' ],
 	] )( 'returns nothing for %s', ( _, area, id ) => {
 		expect( getScreen( area, id ) ).toBeUndefined();
 	} );

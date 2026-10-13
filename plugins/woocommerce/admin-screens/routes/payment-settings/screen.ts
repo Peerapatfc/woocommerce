@@ -36,17 +36,18 @@ export interface FieldsResponse {
 	script_modules: { id: string; fields: string[] }[];
 }
 
+// The settings area this route shows screens for.
+export const AREA = 'payments';
+
 /**
  * Get the screen that PHP passed to the page, when it matches the route.
  */
 export function getScreen(
-	area?: string,
+	area: string,
 	id?: string
 ): SettingsScreen | undefined {
 	const screen = window.wcSettingsScreen;
-	return screen && screen.area === area && screen.id === id
-		? screen
-		: undefined;
+	return screen?.area === area && screen.id === id ? screen : undefined;
 }
 
 /**

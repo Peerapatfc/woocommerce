@@ -8,15 +8,15 @@ import { notFound } from '@wordpress/route';
 /**
  * Internal dependencies
  */
-import { getScreen, NO_KEY } from './screen';
+import { AREA, getScreen, NO_KEY } from './screen';
 
 interface RouteOptions {
-	params: { area?: string; page?: string };
+	params: { page?: string };
 }
 
 export const route = {
 	beforeLoad: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( params.area, params.page );
+		const screen = getScreen( AREA, params.page );
 		if ( ! screen ) {
 			throw notFound();
 		}
@@ -28,7 +28,7 @@ export const route = {
 		}
 	},
 	loader: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( params.area, params.page );
+		const screen = getScreen( AREA, params.page );
 		if ( ! screen ) {
 			return;
 		}

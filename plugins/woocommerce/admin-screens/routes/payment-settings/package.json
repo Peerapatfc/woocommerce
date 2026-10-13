@@ -1,6 +1,6 @@
 {
 	"route": {
-		"path": "/settings/$area/$page",
+		"path": "/settings/payments/$page",
 		"page": "wc-settings-screens"
 	}
 }
