@@ -70,12 +70,37 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 	}
 
 	/**
+	 * @testdox Should accept a payments sub-page ID one level below a gateway, but not in other areas.
+	 */
+	public function test_accepts_sub_page_id_only_in_payments(): void {
+		$screen = array(
+			'title'     => 'Advanced settings',
+			'rest_path' => '/example/v1/settings',
+		);
+		$this->register_screens(
+			array(
+				'payments' => array( 'example/advanced' => $screen ),
+				'emails'   => array( 'example/advanced' => $screen ),
+			)
+		);
+
+		$this->assertSame( array( 'payments' ), array_keys( $this->sut->get_screens() ), 'Only the payments sub-page should be registered' );
+		$this->assertSame( 'example/advanced', $this->sut->get_screen( 'payments', 'example/advanced' )['id'] ?? null );
+	}
+
+	/**
 	 * @testdox Should skip screens in an area whose key can't be used in URLs.
 	 */
 	public function test_skips_invalid_area(): void {
 		$this->register_screens(
 			array(
-				'Payments' => array(
+				'payments/example' => array(
+					'example' => array(
+						'title'     => 'Example settings',
+						'rest_path' => '/example/v1/settings',
+					),
+				),
+				'Payments'         => array(
 					'example' => array(
 						'title'     => 'Example settings',
 						'rest_path' => '/example/v1/settings',
@@ -114,6 +139,11 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 		return array(
 			'ID with uppercase letters'  => array( 'Example', $valid ),
 			'numeric ID'                 => array( 0, $valid ),
+			'two levels below a gateway' => array( 'a/b/c', $valid ),
+			'empty sub-page'             => array( 'a/', $valid ),
+			'empty gateway'              => array( '/a', $valid ),
+			'empty middle segment'       => array( 'a//b', $valid ),
+			'uppercase gateway'          => array( 'A/b', $valid ),
 			'arguments are not an array' => array( 'example', 'example' ),
 			'missing title'              => array( 'example', array( 'rest_path' => '/example/v1/settings' ) ),
 			'relative REST path'         => array(

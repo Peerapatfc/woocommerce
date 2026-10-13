@@ -46,6 +46,18 @@ export interface FieldsResponse {
 // The settings area this route shows screens for.
 export const AREA = 'payments';
 
+export interface ScreenParams {
+	page?: string;
+	subpage?: string;
+}
+
+/**
+ * Get the screen ID named by the route's parameters, such as `woopayments` or `woopayments/woopay`.
+ */
+export function getScreenId( { page, subpage }: ScreenParams ) {
+	return page && subpage ? `${ page }/${ subpage }` : page;
+}
+
 /**
  * Get the screen that PHP passed to the page, when it matches the route.
  */

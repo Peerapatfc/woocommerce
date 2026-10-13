@@ -1,6 +1,6 @@
 {
 	"route": {
-		"path": "/settings/payments/$page",
+		"path": "/settings/payments/$page/{-$subpage}",
 		"page": "wc-settings-screens"
 	}
 }

@@ -221,14 +221,14 @@ class SettingsScreensPage {
 	}
 
 	/**
-	 * Get the screen named in the route, such as `p=/settings/payments/woopayments`.
+	 * Get the screen named in the route, such as `p=/settings/payments/woopayments` or `p=/settings/payments/woopayments/woopay`.
 	 *
 	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
 	 */
 	private function get_requested_screen(): ?array {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only selects which screen to load.
 		$route = isset( $_GET['p'] ) && is_string( $_GET['p'] ) ? sanitize_text_field( wp_unslash( $_GET['p'] ) ) : '';
-		if ( ! preg_match( '#^/settings/([a-z0-9_-]+)/([a-z0-9_-]+)/?(?:\?.*)?$#', $route, $matches ) ) {
+		if ( ! preg_match( '#^/settings/([a-z0-9_-]+)/([a-z0-9_-]+(?:/[a-z0-9_-]+)?)/?(?:\?.*)?$#', $route, $matches ) ) {
 			return null;
 		}
 
@@ -236,7 +236,7 @@ class SettingsScreensPage {
 	}
 
 	/**
-	 * Get the breadcrumb trail for a screen: its area, then the screen itself.
+	 * Get the breadcrumb trail for a screen: its area, the parent screen of a sub-page when it's registered, then the screen itself.
 	 *
 	 * Links are absolute URLs so the route reloads the page, which loads the destination's assets.
 	 *
@@ -245,6 +245,25 @@ class SettingsScreensPage {
 	 */
 	private function get_breadcrumbs( array $screen ): array {
 		$items = array( array( 'label' => $screen['title'] ) );
+
+		$separator = strpos( $screen['id'], '/' );
+		$parent    = false === $separator ? null : $this->screens->get_screen( $screen['area'], substr( $screen['id'], 0, $separator ) );
+		if ( null !== $parent ) {
+			array_unshift(
+				$items,
+				array(
+					'label' => $parent['title'],
+					'to'    => add_query_arg(
+						array(
+							'page' => self::PAGE_SLUG,
+							'p'    => '/settings/' . $parent['area'] . '/' . $parent['id'],
+						),
+						admin_url( 'admin.php' )
+					),
+				)
+			);
+		}
+
 		if ( 'payments' === $screen['area'] ) {
 			array_unshift(
 				$items,

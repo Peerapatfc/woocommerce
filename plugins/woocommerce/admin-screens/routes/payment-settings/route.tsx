@@ -8,15 +8,16 @@ import { notFound } from '@wordpress/route';
 /**
  * Internal dependencies
  */
-import { AREA, getScreen, NO_KEY } from './screen';
+import { AREA, getScreen, getScreenId, NO_KEY } from './screen';
+import type { ScreenParams } from './screen';
 
 interface RouteOptions {
-	params: { page?: string };
+	params: ScreenParams;
 }
 
 export const route = {
 	loader: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( AREA, params.page );
+		const screen = getScreen( AREA, getScreenId( params ) );
 		if ( ! screen ) {
 			throw notFound();
 		}

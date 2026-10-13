@@ -11,8 +11,8 @@ import { useParams } from '@wordpress/route';
  * Internal dependencies
  */
 import { useSettingsEntity } from './save';
-import { AREA, getScreen, useScreenDefinition } from './screen';
-import type { SettingsScreen, ScreenDefinition } from './screen';
+import { AREA, getScreen, getScreenId, useScreenDefinition } from './screen';
+import type { ScreenParams, SettingsScreen, ScreenDefinition } from './screen';
 import './style.scss';
 
 function LoadError( { error }: { error: Error } ) {
@@ -127,8 +127,8 @@ function ScreenContent( { screen }: { screen: SettingsScreen } ) {
 
 function SettingsStage() {
 	// useParams() is untyped without a registered router.
-	const { page }: { page?: string } = useParams( { strict: false } );
-	const screen = getScreen( AREA, page );
+	const params: ScreenParams = useParams( { strict: false } );
+	const screen = getScreen( AREA, getScreenId( params ) );
 
 	return screen ? <ScreenContent screen={ screen } /> : null;
 }

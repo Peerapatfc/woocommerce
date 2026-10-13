@@ -31,7 +31,8 @@ final class SettingsScreens {
 		 *
 		 * Screens are keyed by area (such as `payments`) and then by screen ID. Each screen has a
 		 * `title`, the `rest_path` of its settings entity, and optional `scripts` (script handles to
-		 * load on the screen).
+		 * load on the screen). A payments screen ID can name a sub-page of a gateway's screen, such as
+		 * `woopayments/woopay`; the complete ID is also its entity name and its path in the URL.
 		 *
 		 * @since 11.3.0
 		 *
@@ -92,7 +93,7 @@ final class SettingsScreens {
 	 * @return array{area: string, id: string, title: string, rest_path: string, scripts: string[]}|null
 	 */
 	private static function normalize_screen( string $area, $id, $screen ): ?array {
-		if ( ! self::is_valid_key( $id ) || ! is_array( $screen ) ) {
+		if ( ! self::is_valid_screen_id( $area, $id ) || ! is_array( $screen ) ) {
 			return null;
 		}
 
@@ -112,6 +113,23 @@ final class SettingsScreens {
 			'rest_path' => $rest_path,
 			'scripts'   => $scripts,
 		);
+	}
+
+	/**
+	 * Whether a screen ID is valid in an area. Payments screens can also be one level below a gateway, as `gateway/child`.
+	 *
+	 * @param string $area The area.
+	 * @param mixed  $id   The screen ID.
+	 * @return bool
+	 *
+	 * @phpstan-assert-if-true string $id
+	 */
+	private static function is_valid_screen_id( string $area, $id ): bool {
+		if ( 'payments' === $area && is_string( $id ) && false !== strpos( $id, '/' ) ) {
+			return 1 === preg_match( '#^[a-z0-9_-]+/[a-z0-9_-]+$#', $id );
+		}
+
+		return self::is_valid_key( $id );
 	}
 
 	/**
