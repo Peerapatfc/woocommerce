@@ -28,7 +28,7 @@ interface ResolutionSelectors {
 export function useSettingsEntity( screen: SettingsScreen ) {
 	const { kind, name } = screen.entity;
 	const [ notice, setNotice ] = useState< SaveNotice >();
-	const { record, data, isDirty, isSaving, loadError } = useSelect(
+	const { record, data, isDirty, isSaving, resolutionError } = useSelect(
 		( select ) => {
 			const core = select( coreStore );
 			return {
@@ -37,13 +37,13 @@ export function useSettingsEntity( screen: SettingsScreen ) {
 					SettingsRecord | undefined,
 				isDirty: core.hasEditsForEntityRecord( kind, name, NO_KEY ),
 				isSaving: core.isSavingEntityRecord( kind, name, NO_KEY ),
-				loadError: (
+				resolutionError: (
 					core as unknown as ResolutionSelectors
 				 ).getResolutionError( 'getEntityRecord', [
 					kind,
 					name,
 					NO_KEY,
-				] ) as Error | undefined,
+				] ),
 			};
 		},
 		[ kind, name ]
@@ -92,11 +92,10 @@ export function useSettingsEntity( screen: SettingsScreen ) {
 	};
 
 	return {
-		record,
 		data,
 		isDirty,
 		isSaving,
-		loadError,
+		loadError: resolutionError ? toError( resolutionError ) : undefined,
 		notice,
 		clearNotice: () => {
 			setNotice( undefined );

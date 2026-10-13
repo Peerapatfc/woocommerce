@@ -15,7 +15,7 @@ interface RouteOptions {
 }
 
 export const route = {
-	beforeLoad: async ( { params }: RouteOptions ) => {
+	loader: async ( { params }: RouteOptions ) => {
 		const screen = getScreen( AREA, params.page );
 		if ( ! screen ) {
 			throw notFound();
@@ -26,13 +26,6 @@ export const route = {
 				{ ...screen.entity, key: false },
 			] );
 		}
-	},
-	loader: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( AREA, params.page );
-		if ( ! screen ) {
-			return;
-		}
-		const { kind, name } = screen.entity;
 		// The stage shows load errors, so a failed request must not reject the route.
 		// resolveSelect() is untyped in this version of @wordpress/data.
 		const resolver = (

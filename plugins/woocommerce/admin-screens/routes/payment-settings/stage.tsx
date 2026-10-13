@@ -15,6 +15,14 @@ import { AREA, getScreen, useScreenDefinition } from './screen';
 import type { SettingsScreen, ScreenDefinition } from './screen';
 import './style.scss';
 
+function LoadError( { error }: { error: Error } ) {
+	return (
+		<Notice status="error" isDismissible={ false }>
+			{ error.message }
+		</Notice>
+	);
+}
+
 function SettingsForm( {
 	screen,
 	definition,
@@ -23,7 +31,6 @@ function SettingsForm( {
 	definition: ScreenDefinition;
 } ) {
 	const {
-		record,
 		data,
 		isDirty,
 		isSaving,
@@ -41,14 +48,9 @@ function SettingsForm( {
 	);
 
 	if ( loadError ) {
-		return (
-			<Notice status="error" isDismissible={ false }>
-				{ loadError.message ||
-					__( 'Unable to load settings.', 'woocommerce' ) }
-			</Notice>
-		);
+		return <LoadError error={ loadError } />;
 	}
-	if ( ! record || ! data ) {
+	if ( ! data ) {
 		return <Spinner />;
 	}
 
@@ -75,11 +77,7 @@ function SettingsForm( {
 						size="compact"
 						isBusy={ isSaving }
 						disabled={ isSaving || ! canSave }
-						onClick={ () => {
-							if ( canSave ) {
-								void save();
-							}
-						} }
+						onClick={ () => void save() }
 					>
 						{ __( 'Save changes', 'woocommerce' ) }
 					</Button>
@@ -117,12 +115,7 @@ function ScreenContent( { screen }: { screen: SettingsScreen } ) {
 	const { definition, error } = useScreenDefinition( screen );
 
 	if ( error ) {
-		return (
-			<Notice status="error" isDismissible={ false }>
-				{ error.message ||
-					__( 'Unable to load settings.', 'woocommerce' ) }
-			</Notice>
-		);
+		return <LoadError error={ error } />;
 	}
 	if ( ! definition ) {
 		return <Spinner />;
