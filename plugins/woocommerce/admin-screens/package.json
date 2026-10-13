@@ -67,7 +67,7 @@
 		"handlePrefix": "wc-routes",
 		"pages": [
 			{
-				"id": "wc-payment-settings",
+				"id": "wc-settings-screens",
 				"capability": "manage_woocommerce"
 			}
 		]

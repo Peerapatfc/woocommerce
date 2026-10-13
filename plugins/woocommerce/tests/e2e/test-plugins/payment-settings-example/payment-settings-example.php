@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooCommerce payment settings screen example
- * Description: Registers an example screen on the experimental payment settings screen, for manual and E2E testing.
+ * Description: Registers an example payments screen on the experimental settings screens, for manual and E2E testing.
  *
  * @package WooCommerce\E2E
  */
@@ -12,9 +12,9 @@ defined( 'ABSPATH' ) || exit;
 
 // The screen, entity and endpoint used by the example.
 add_filter(
-	'__experimental_woocommerce_payment_settings_screens',
+	'__experimental_woocommerce_settings_screens',
 	static function ( $screens ) {
-		$screens['example'] = array(
+		$screens['payments']['example'] = array(
 			'title'     => 'Example gateway settings',
 			'rest_path' => '/payment-settings-example/v1/settings',
 		);
@@ -74,7 +74,7 @@ add_action(
 	static function ( $registry ) {
 		$registry->register(
 			'payment-settings-example',
-			'woo_settings',
+			'woo_settings_payments',
 			'example',
 			array(
 				array(
@@ -116,7 +116,7 @@ add_action(
 );
 
 add_filter(
-	'get_entity_view_config_woo_settings_example',
+	'get_entity_view_config_woo_settings_payments_example',
 	static function ( $config ) {
 		if ( ! is_object( $config ) || ! is_callable( array( $config, 'merge' ) ) ) {
 			return $config;

@@ -1,8 +1,8 @@
 /**
  * Internal dependencies
  */
-import { applyFieldModules, toError } from '../screen';
-import type { FieldsResponse } from '../screen';
+import { applyFieldModules, getScreen, toError } from '../screen';
+import type { FieldsResponse, SettingsScreen } from '../screen';
 
 const response: FieldsResponse = {
 	fields: [
@@ -88,5 +88,38 @@ describe( 'toError', () => {
 		expect( toError( { code: 'no_message' } ).message ).toBe(
 			'Unable to load settings.'
 		);
+	} );
+} );
+
+describe( 'getScreen', () => {
+	const screen: SettingsScreen = {
+		area: 'payments',
+		id: 'example',
+		title: 'Example',
+		entity: {
+			kind: 'woo_settings_payments',
+			name: 'example',
+			baseURL: '/example/v1/settings',
+		},
+	};
+
+	beforeEach( () => {
+		window.wcSettingsScreen = screen;
+	} );
+
+	afterEach( () => {
+		delete window.wcSettingsScreen;
+	} );
+
+	it( 'returns the screen when the area and ID match the route', () => {
+		expect( getScreen( 'payments', 'example' ) ).toBe( screen );
+	} );
+
+	it.each( [
+		[ 'another area', 'emails', 'example' ],
+		[ 'another ID', 'payments', 'other' ],
+		[ 'a missing area', undefined, 'example' ],
+	] )( 'returns nothing for %s', ( _, area, id ) => {
+		expect( getScreen( area, id ) ).toBeUndefined();
 	} );
 } );

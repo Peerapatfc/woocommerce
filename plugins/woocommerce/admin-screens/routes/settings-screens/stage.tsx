@@ -12,14 +12,14 @@ import { useParams } from '@wordpress/route';
  */
 import { useSettingsEntity } from './save';
 import { getScreen, useScreenDefinition } from './screen';
-import type { PaymentSettingsScreen, ScreenDefinition } from './screen';
+import type { SettingsScreen, ScreenDefinition } from './screen';
 import './style.scss';
 
 function SettingsForm( {
 	screen,
 	definition,
 }: {
-	screen: PaymentSettingsScreen;
+	screen: SettingsScreen;
 	definition: ScreenDefinition;
 } ) {
 	const {
@@ -86,7 +86,7 @@ function SettingsForm( {
 				</>
 			}
 		>
-			<div className="wc-payment-settings__content">
+			<div className="wc-settings-screen__content">
 				{ definition.errors.map( ( error ) => (
 					<Notice
 						key={ error.message }
@@ -113,7 +113,7 @@ function SettingsForm( {
 	);
 }
 
-function ScreenContent( { screen }: { screen: PaymentSettingsScreen } ) {
+function ScreenContent( { screen }: { screen: SettingsScreen } ) {
 	const { definition, error } = useScreenDefinition( screen );
 
 	if ( error ) {
@@ -133,8 +133,10 @@ function ScreenContent( { screen }: { screen: PaymentSettingsScreen } ) {
 
 function SettingsStage() {
 	// useParams() is untyped without a registered router.
-	const { page }: { page?: string } = useParams( { strict: false } );
-	const screen = getScreen( page );
+	const { area, page }: { area?: string; page?: string } = useParams( {
+		strict: false,
+	} );
+	const screen = getScreen( area, page );
 
 	return screen ? <ScreenContent screen={ screen } /> : null;
 }

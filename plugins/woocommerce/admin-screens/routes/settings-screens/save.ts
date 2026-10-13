@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { saveAndReload } from './save-and-reload';
 import type { SaveNotice } from './save-and-reload';
 import { NO_KEY } from './screen';
-import type { PaymentSettingsScreen, SettingsRecord } from './screen';
+import type { SettingsScreen, SettingsRecord } from './screen';
 
 // Every store has these metadata selectors and actions, but core-data's types leave them out.
 interface ResolutionSelectors {
@@ -27,7 +27,7 @@ interface ResolutionActions {
 /**
  * Edit, save and discard the settings entity of a screen.
  */
-export function useSettingsEntity( screen: PaymentSettingsScreen ) {
+export function useSettingsEntity( screen: SettingsScreen ) {
 	const { kind, name } = screen.entity;
 	const [ notice, setNotice ] = useState< SaveNotice >();
 	const { record, data, isDirty, isSaving, loadError } = useSelect(

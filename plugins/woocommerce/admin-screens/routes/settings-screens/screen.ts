@@ -12,7 +12,8 @@ export type SettingsRecord = Record< string, unknown >;
 // Settings entities have no record key (`key: false`), but core-data's types require one.
 export const NO_KEY = undefined as unknown as string;
 
-export interface PaymentSettingsScreen {
+export interface SettingsScreen {
+	area: string;
 	id: string;
 	title: string;
 	entity: { kind: string; name: string; baseURL: string };
@@ -26,7 +27,7 @@ export interface ScreenDefinition {
 
 declare global {
 	interface Window {
-		wcPaymentSettingsScreen?: PaymentSettingsScreen;
+		wcSettingsScreen?: SettingsScreen;
 	}
 }
 
@@ -38,9 +39,14 @@ export interface FieldsResponse {
 /**
  * Get the screen that PHP passed to the page, when it matches the route.
  */
-export function getScreen( id?: string ): PaymentSettingsScreen | undefined {
-	const screen = window.wcPaymentSettingsScreen;
-	return screen && screen.id === id ? screen : undefined;
+export function getScreen(
+	area?: string,
+	id?: string
+): SettingsScreen | undefined {
+	const screen = window.wcSettingsScreen;
+	return screen && screen.area === area && screen.id === id
+		? screen
+		: undefined;
 }
 
 /**
@@ -106,7 +112,7 @@ async function loadFields( kind: string, name: string ) {
  * Load a screen's fields from the Fields API and its form from View Config.
  */
 export async function loadDefinition(
-	screen: PaymentSettingsScreen
+	screen: SettingsScreen
 ): Promise< ScreenDefinition > {
 	const { kind, name } = screen.entity;
 	const [ fields, form ] = await Promise.all( [
@@ -147,7 +153,7 @@ export function toError(
 /**
  * Load a screen's definition once, reporting a failed request as an error.
  */
-export function useScreenDefinition( screen: PaymentSettingsScreen ) {
+export function useScreenDefinition( screen: SettingsScreen ) {
 	const [ state, setState ] = useState< {
 		definition?: ScreenDefinition;
 		error?: Error;

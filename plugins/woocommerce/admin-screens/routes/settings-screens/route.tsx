@@ -11,12 +11,12 @@ import { notFound } from '@wordpress/route';
 import { getScreen, NO_KEY } from './screen';
 
 interface RouteOptions {
-	params: { page?: string };
+	params: { area?: string; page?: string };
 }
 
 export const route = {
 	beforeLoad: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( params.page );
+		const screen = getScreen( params.area, params.page );
 		if ( ! screen ) {
 			throw notFound();
 		}
@@ -28,7 +28,7 @@ export const route = {
 		}
 	},
 	loader: async ( { params }: RouteOptions ) => {
-		const screen = getScreen( params.page );
+		const screen = getScreen( params.area, params.page );
 		if ( ! screen ) {
 			return;
 		}
