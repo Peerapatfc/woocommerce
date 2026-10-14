@@ -59,7 +59,6 @@ function SettingsForm( {
 	const canSave = isDirty && isValid && definition.errors.length === 0;
 	return (
 		<Page
-			className="wc-settings-screen"
 			ariaLabel={ screen.title }
 			breadcrumbs={ <Breadcrumbs items={ screen.breadcrumbs } /> }
 			showSidebarToggle={ false }

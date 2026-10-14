@@ -7,8 +7,3 @@
 	max-width: 720px;
 	width: 100%;
 }
-
-// WooCommerce's admin styles set `text-wrap: balance` on headings, which stops the breadcrumbs truncating the current title.
-.woocommerce-admin-page .wc-settings-screen h1 {
-	white-space: nowrap;
-}
