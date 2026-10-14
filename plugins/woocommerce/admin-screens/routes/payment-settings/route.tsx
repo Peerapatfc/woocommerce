@@ -23,8 +23,14 @@ export const route = {
 		}
 		const { kind, name } = screen.entity;
 		if ( ! select( coreStore ).getEntityConfig( kind, name ) ) {
+			// Core's "Review changes" panel (Cmd/Ctrl+S) names the entity with `label` and `getTitle`.
 			await dispatch( coreStore ).addEntities( [
-				{ ...screen.entity, key: false },
+				{
+					...screen.entity,
+					key: false,
+					label: screen.title,
+					getTitle: () => screen.title,
+				},
 			] );
 		}
 		// The stage shows load errors, so a failed request must not reject the route.
