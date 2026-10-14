@@ -3,6 +3,7 @@ declare( strict_types = 1 );
 
 namespace Automattic\WooCommerce\Tests\Internal\Admin\Settings;
 
+use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\Internal\Admin\Settings\SettingsScreens;
 use Automattic\WooCommerce\Internal\Admin\Settings\SettingsScreensPage;
 use WC_Unit_Test_Case;
@@ -33,7 +34,8 @@ class SettingsScreensPageTest extends WC_Unit_Test_Case {
 	 */
 	public function tearDown(): void {
 		try {
-			unset( $_GET['p'] );
+			unset( $_GET['p'], $_GET['page'] );
+			set_current_screen( 'front' );
 			wp_dequeue_script( 'example-screen-script' );
 			wp_dequeue_script( 'example-advanced-script' );
 			wp_deregister_script( 'wc-settings-screen' );
@@ -141,6 +143,23 @@ class SettingsScreensPageTest extends WC_Unit_Test_Case {
 		$this->sut->handle_page_init();
 
 		$this->assertSame( array( 'Payments', 'Advanced settings' ), array_column( $this->get_screen_data()['breadcrumbs'], 'label' ) );
+	}
+
+	/**
+	 * @testdox Should not show the WooCommerce admin header, unlike the Settings tabs.
+	 *
+	 * @testWith ["wc-settings-screens-wp-admin", false]
+	 *           ["wc-settings", true]
+	 *
+	 * @param string $page      The requested admin page.
+	 * @param bool   $connected Whether the page should show the WooCommerce admin header.
+	 */
+	public function test_page_is_not_connected_to_admin_header( string $page, bool $connected ): void {
+		PageController::get_instance()->register_page_handler();
+		$_GET['page'] = $page;
+		set_current_screen( 'woocommerce_page_' . $page );
+
+		$this->assertSame( $connected, wc_admin_connect_core_pages( false, false ) );
 	}
 
 	/**

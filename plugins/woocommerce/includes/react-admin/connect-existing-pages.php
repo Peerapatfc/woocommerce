@@ -6,6 +6,7 @@
  */
 
 use Automattic\WooCommerce\Admin\PageController;
+use Automattic\WooCommerce\Internal\Admin\Settings\SettingsScreensPage;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
@@ -106,7 +107,13 @@ function wc_admin_filter_core_page_breadcrumbs( $breadcrumbs ) {
  */
 function wc_admin_connect_core_pages( $is_connected, $current_page ) {
 	if ( false === $is_connected && false === $current_page ) {
-		$screen_id        = PageController::get_instance()->get_current_screen_id();
+		$screen_id = PageController::get_instance()->get_current_screen_id();
+
+		// The settings screens page isn't a Settings tab, although its slug starts with `wc-settings-`.
+		if ( 'woocommerce_page_' . SettingsScreensPage::PAGE_SLUG === $screen_id ) {
+			return $is_connected;
+		}
+
 		$pages_to_connect = wc_admin_get_core_pages_to_connect();
 
 		foreach ( $pages_to_connect as $page_id => $page_data ) {
