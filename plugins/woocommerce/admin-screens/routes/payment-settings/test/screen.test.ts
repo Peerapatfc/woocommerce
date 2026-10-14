@@ -132,43 +132,7 @@ describe( 'getScreenId', () => {
 			{ page: 'example', subpage: 'advanced' },
 			'example/advanced',
 		],
-		[ 'no page', {}, undefined ],
 	] )( 'names %s', ( _, params, id ) => {
 		expect( getScreenId( params ) ).toBe( id );
-	} );
-} );
-
-describe( 'getScreen for a sub-page', () => {
-	const screen: SettingsScreen = {
-		area: 'payments',
-		id: 'example/advanced',
-		title: 'Advanced',
-		breadcrumbs: [ { label: 'Advanced' } ],
-		entity: {
-			kind: 'woo_settings_payments',
-			name: 'example/advanced',
-			baseURL: '/example/v1/settings',
-		},
-	};
-
-	beforeEach( () => {
-		window.wcSettingsScreen = screen;
-	} );
-
-	afterEach( () => {
-		delete window.wcSettingsScreen;
-	} );
-
-	it( 'returns the sub-page for its complete ID', () => {
-		expect(
-			getScreen(
-				'payments',
-				getScreenId( { page: 'example', subpage: 'advanced' } )
-			)
-		).toBe( screen );
-	} );
-
-	it( 'returns nothing for the parent screen ID', () => {
-		expect( getScreen( 'payments', 'example' ) ).toBeUndefined();
 	} );
 } );

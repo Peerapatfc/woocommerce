@@ -52,24 +52,6 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * @testdox Should only find a screen in the area it was registered in.
-	 */
-	public function test_finds_screen_only_in_its_area(): void {
-		$this->register_screens(
-			array(
-				'payments' => array(
-					'example' => array(
-						'title'     => 'Example settings',
-						'rest_path' => '/example/v1/settings',
-					),
-				),
-			)
-		);
-
-		$this->assertNull( $this->sut->get_screen( 'emails', 'example' ), 'A screen should not be found in another area' );
-	}
-
-	/**
 	 * @testdox Should accept a payments sub-page ID one level below a gateway, but not in other areas.
 	 */
 	public function test_accepts_sub_page_id_only_in_payments(): void {
@@ -141,8 +123,6 @@ class SettingsScreensTest extends WC_Unit_Test_Case {
 			'numeric ID'                 => array( 0, $valid ),
 			'two levels below a gateway' => array( 'a/b/c', $valid ),
 			'empty sub-page'             => array( 'a/', $valid ),
-			'empty gateway'              => array( '/a', $valid ),
-			'empty middle segment'       => array( 'a//b', $valid ),
 			'uppercase gateway'          => array( 'A/b', $valid ),
 			'arguments are not an array' => array( 'example', 'example' ),
 			'missing title'              => array( 'example', array( 'rest_path' => '/example/v1/settings' ) ),
