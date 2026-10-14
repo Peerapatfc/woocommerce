@@ -4,6 +4,7 @@ declare( strict_types = 1 );
 namespace Automattic\WooCommerce\Internal\ProductFeed\Mapping;
 
 use Automattic\WooCommerce\StoreApi\Formatters\MoneyFormatter;
+use Automattic\WooCommerce\StoreApi\Utilities\UcpUtils;
 
 /**
  * Maps WooCommerce products to the UCP catalog product shape.
@@ -310,7 +311,7 @@ class UcpProductMapper implements ProductShapeMapperInterface {
 	 * @return int
 	 */
 	public function to_minor_units( $amount ): int {
-		return (int) $this->money->format( is_scalar( $amount ) ? (string) $amount : '0' );
+		return UcpUtils::to_minor_units( $this->money, $amount );
 	}
 
 	/**
