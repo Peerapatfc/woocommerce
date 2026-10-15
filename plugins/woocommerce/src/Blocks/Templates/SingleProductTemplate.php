@@ -24,7 +24,7 @@ class SingleProductTemplate extends AbstractTemplate {
 	 */
 	public function init() {
 		add_action( 'template_redirect', array( $this, 'render_block_template' ) );
-		add_filter( 'get_block_templates', array( $this, 'update_single_product_content' ), 11, 1 );
+		add_filter( 'get_block_templates', array( $this, 'update_single_product_content' ), 12, 1 );
 	}
 
 	/**
