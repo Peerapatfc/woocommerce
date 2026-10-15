@@ -154,7 +154,11 @@ class BlockTemplatesRegistry {
 			foreach ( $templates as $template ) {
 				$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
 				if ( null !== $template_path && '' === $template->content && 'woocommerce' === ( $template->plugin ?? null ) ) {
-					$template->content = (string) file_get_contents( $template_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+					$template->content = apply_block_hooks_to_content(
+						(string) file_get_contents( $template_path ), // phpcs:ignore WordPress.WP.AlternativeFunctions
+						$template,
+						'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
+					);
 				}
 			}
 		}
