@@ -110,9 +110,10 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		// Lazy-load template content for 'woocommerce//slug' (secondary path, registry fallback - must run second, hence priority is 11).
-		// Primary resolution is BlockTemplatesController::get_block_file_template ('woocommerce/woocommerce//slug').
+		// Lazy-load template content into two independent core resolution paths:
+		// - get_block_templates (plural): template listings, editor, REST. Path: DB → theme files → registry → get_block_templates filter.
 		add_filter( 'get_block_templates', array( $this, 'populate_block_file_template_contents' ), 11, 3 );
+		// - get_block_file_template (singular fallback): front-end rendering. Path: get_block_template → get_block_file_template → registry get_by_slug → get_block_file_template filter.
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -152,7 +153,7 @@ class BlockTemplatesRegistry {
 		if ( 'wp_template' === $template_type ) {
 			foreach ( $templates as $template ) {
 				$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
-				if ( null !== $template_path && '' === $template->content ) {
+				if ( null !== $template_path && '' === $template->content && 'woocommerce' === ( $template->plugin ?? null ) ) {
 					$template->content = (string) file_get_contents( $template_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 				}
 			}
