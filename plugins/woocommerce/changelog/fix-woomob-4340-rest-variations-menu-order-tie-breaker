@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Return each variation exactly once when paging the REST API by menu order, title, or slug.
