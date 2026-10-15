@@ -228,7 +228,7 @@ class SingleProductTemplateTests extends WP_UnitTestCase {
 			// the method up at all. Pin the registration separately.
 			$single_product_template->init();
 			$this->assertSame(
-				11,
+				12,
 				has_filter( 'get_block_templates', array( $single_product_template, 'update_single_product_content' ) ),
 				'init() must register the callback that installs the body_class filter.'
 			);
