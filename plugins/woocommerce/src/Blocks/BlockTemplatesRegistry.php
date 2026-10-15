@@ -157,8 +157,8 @@ class BlockTemplatesRegistry {
 					$template = $registry->get_registered( $name );
 					if ( $template && '' === $template->content && 'woocommerce' === ( $template->plugin ?? null ) ) {
 						$template->content = (string) file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-						unset( $this->template_paths[ $name ] );
 					}
+					unset( $this->template_paths[ $name ] );
 				}
 			}
 		}
