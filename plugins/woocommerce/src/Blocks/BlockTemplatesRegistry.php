@@ -92,7 +92,6 @@ class BlockTemplatesRegistry {
 			}
 		}
 
-		// Init all templates. Content is loaded lazily via the get_block_templates filter for better performance.
 		$directory = BlockTemplateUtils::get_templates_directory( 'wp_template' );
 		foreach ( $templates as $template ) {
 			$template->init();
