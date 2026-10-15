@@ -53,9 +53,9 @@ class BlockTemplatesController {
 	 * @since 11.3.0
 	 * @internal
 	 *
-	 * @param string|null   $pre_render   The pre-rendered content, or null to let the block render normally.
-	 * @param array         $parsed_block The block being rendered.
-	 * @param WP_Block|null $parent_block The parent block, if any.
+	 * @param string|null    $pre_render   The pre-rendered content, or null to let the block render normally.
+	 * @param array          $parsed_block The block being rendered.
+	 * @param \WP_Block|null $parent_block The parent block, if any.
 	 * @return string|null
 	 */
 	public function pre_render_woocommerce_template_part( $pre_render, $parsed_block, $parent_block = null ) {
