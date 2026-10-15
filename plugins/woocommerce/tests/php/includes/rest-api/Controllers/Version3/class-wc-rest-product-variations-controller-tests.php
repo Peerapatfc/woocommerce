@@ -1296,6 +1296,102 @@ class WC_REST_Product_Variations_Controller_Tests extends WC_Unit_Test_Case {
 	}
 
 	/**
+	 * @testdox Paging variations that share a menu_order returns each variation exactly once, in the admin list order.
+	 *
+	 * @testWith ["offset"]
+	 *           ["page"]
+	 *
+	 * @param string $pagination_param Either 'offset' or 'page'.
+	 */
+	public function test_variations_paginated_by_menu_order_return_each_variation_once( string $pagination_param ): void {
+		$product       = $this->create_product_with_variations_sharing_menu_order( 7 );
+		$per_page      = 3;
+		$collected_ids = array();
+
+		for ( $page = 1; $page <= 4; $page++ ) {
+			$request = new WP_REST_Request( 'GET', '/wc/v3/products/' . $product->get_id() . '/variations' );
+			$request->set_query_params(
+				array(
+					'orderby'         => 'menu_order',
+					'order'           => 'asc',
+					'per_page'        => $per_page,
+					$pagination_param => 'offset' === $pagination_param ? ( $page - 1 ) * $per_page : $page,
+				)
+			);
+			$response = $this->server->dispatch( $request );
+			$this->assertSame( 200, $response->get_status(), "Page {$page} should load." );
+			$collected_ids = array_merge( $collected_ids, wp_list_pluck( $response->get_data(), 'id' ) );
+		}
+
+		// The admin variations list (WC_AJAX::load_variations) breaks menu_order ties by ID DESC.
+		$admin_order_ids = $product->get_children();
+		rsort( $admin_order_ids );
+		$this->assertSame( count( $collected_ids ), count( array_unique( $collected_ids ) ), 'No variation should appear on more than one page.' );
+		$this->assertSame( $admin_order_ids, $collected_ids, 'The pages together should contain every variation, in the admin variations list order.' );
+	}
+
+	/**
+	 * @testdox Non-unique orderby values get an ID tie-breaker; menu_order matches the admin variations list.
+	 *
+	 * @testWith ["menu_order", "asc", "menu_order ASC, {posts}.ID DESC"]
+	 *           ["menu_order", "desc", "menu_order DESC, {posts}.ID ASC"]
+	 *           ["title", "asc", "post_title ASC, {posts}.ID ASC"]
+	 *           ["slug", "asc", "post_name ASC, {posts}.ID ASC"]
+	 *           ["date", "asc", "post_date ASC, {posts}.ID ASC"]
+	 *           ["id", "asc", "ID ASC"]
+	 *
+	 * @param string $orderby  The orderby request param.
+	 * @param string $order    The order request param.
+	 * @param string $expected Expected ORDER BY clause, with table prefixes as {posts}.
+	 */
+	public function test_variations_orderby_adds_id_tie_breaker( string $orderby, string $order, string $expected ): void {
+		global $wpdb;
+
+		$product         = $this->create_product_with_variations_sharing_menu_order( 2 );
+		$orderby_clauses = array();
+		add_filter(
+			'posts_orderby',
+			function ( $clause, $query ) use ( &$orderby_clauses ) {
+				if ( 'product_variation' === $query->get( 'post_type' ) ) {
+					$orderby_clauses[] = $clause;
+				}
+				return $clause;
+			},
+			10,
+			2
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wc/v3/products/' . $product->get_id() . '/variations' );
+		$request->set_query_params(
+			array(
+				'orderby' => $orderby,
+				'order'   => $order,
+			)
+		);
+		$this->server->dispatch( $request );
+
+		$this->assertSame( array( "{$wpdb->posts}." . str_replace( '{posts}', $wpdb->posts, $expected ) ), $orderby_clauses );
+	}
+
+	/**
+	 * Create a variable product whose variations all have menu_order 0.
+	 *
+	 * @param int $count Number of variations to create.
+	 * @return WC_Product_Variable
+	 */
+	private function create_product_with_variations_sharing_menu_order( int $count ): WC_Product_Variable {
+		$product = new WC_Product_Variable();
+		$product->save();
+		for ( $i = 0; $i < $count; $i++ ) {
+			$variation = new WC_Product_Variation();
+			$variation->set_parent_id( $product->get_id() );
+			$variation->set_menu_order( 0 );
+			$variation->save();
+		}
+		return new WC_Product_Variable( $product->get_id() );
+	}
+
+	/**
 	 * Create a variable product and return its variations collection route.
 	 *
 	 * @return string

@@ -984,6 +984,18 @@ class WC_REST_Product_Variations_Controller extends WC_REST_Product_Variations_V
 	protected function prepare_objects_query( $request ) {
 		$args = WC_REST_CRUD_Controller::prepare_objects_query( $request );
 
+		// Add ID to orderby for consistency with pagination. menu_order ASC matches the admin variations list
+		// (WC_AJAX::load_variations), which breaks ties by ID DESC. 'name' is the mapped 'slug'.
+		if ( 'menu_order' === $args['orderby'] ) {
+			$is_asc          = is_string( $args['order'] ) && 'asc' === strtolower( $args['order'] );
+			$args['orderby'] = array(
+				'menu_order' => $is_asc ? 'ASC' : 'DESC',
+				'ID'         => $is_asc ? 'DESC' : 'ASC',
+			);
+		} elseif ( in_array( $args['orderby'], array( 'title', 'name' ), true ) ) {
+			$args['orderby'] .= ' ID';
+		}
+
 		// Set post_status.
 		$args['post_status'] = $request['status'];
 
