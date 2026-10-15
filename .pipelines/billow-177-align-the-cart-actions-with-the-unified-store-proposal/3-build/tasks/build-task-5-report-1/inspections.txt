@@ -1,0 +1,51 @@
+== refreshCart span (HEAD *refreshCart..EOF) vs base (*refreshCartItems..EOF), diff:
+1c1
+< 			*refreshCartItems(): AsyncAction< void > {
+---
+> 			*refreshCart(): AsyncAction< void > {
+65c65
+< 					setTimeout( actions.refreshCartItems, refreshTimeout );
+---
+> 					setTimeout( actions.refreshCart, refreshTimeout );
+85c85
+< void actions.refreshCartItems();
+---
+> void actions.refreshCart();
+95c95
+< 			void actions.refreshCartItems();
+---
+> 			void actions.refreshCart();
+== onCycleSettled diff (HEAD 250-302 vs base 251-303 by brace match)
+53 53 identical
+== HEAD addCartItem: notice handling lines (500-700)
+5:				{ showCartUpdatesNotices = true }: CartUpdateOptions = {}
+7:				preloadA11y();
+98:						meta: { quantityChanges, origin: 'add' },
+112:						showCartUpdatesNotices &&
+131:						yield actions.updateNotices(
+136:				} catch ( error ) {
+138:					void actions.showNoticeError( error as Error );
+170:			 * @param options.showCartUpdatesNotices Whether to show the notices for
+175:				{ showCartUpdatesNotices = true }: CartUpdateOptions = {}
+177:				preloadA11y();
+== base keyed+keyless addCartItem (396-640)
+3:				{ showCartUpdatesNotices = true }: CartUpdateOptions = {}
+32:				preloadA11y();
+178:								// resurrects the original "cannot update bundle item"
+195:						meta: { quantityChanges, origin: 'add' },
+209:						showCartUpdatesNotices &&
+228:						yield actions.updateNotices(
+233:				} catch ( error ) {
+235:					void actions.showNoticeError( error as Error );
+== HEAD updateCartItem (410-500)
+9:					throw new Error( 'updateCartItem: a key is required.' );
+12:				preloadA11y();
+51:							origin: 'add',
+63:						yield actions.updateNotices(
+68:				} catch ( error ) {
+69:					void actions.showNoticeError( error as Error );
+== Reading
+- refreshCart: the only diff against the base's refreshCartItems span is the action name (lines 1, 65, 85, 95); the retry, skip and discard logic is identical.
+- onCycleSettled: 53 lines on both sides, identical.
+- updateCartItem: throws on a missing key, calls preloadA11y(), submits origin 'add' (lines 9, 12, 51 of the 410-500 excerpt).
+- addCartItem (HEAD actions.ts 609-636): updateNotices([...], true) sits inside `showCartUpdatesNotices && cart && cartAfterOptimistic`; the catch calls showNoticeError unconditionally; same shape as the base keyless path (base 209-235 of the 396-640 excerpt).
