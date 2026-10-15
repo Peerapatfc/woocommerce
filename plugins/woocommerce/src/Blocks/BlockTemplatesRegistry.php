@@ -109,7 +109,8 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		add_filter( 'pre_get_block_templates', array( $this, 'lazy_load_template_contents' ), 0, 3 );
+		add_filter( 'pre_get_block_templates', array( $this, 'lazy_load_requested_templates_content' ), 0, 3 );
+		add_filter( 'pre_get_block_file_template', array( $this, 'lazy_load_single_template_content' ), 0, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -146,7 +147,7 @@ class BlockTemplatesRegistry {
 	 * @param string $template_type Template type.
 	 * @return mixed Unmodified $result.
 	 */
-	public function lazy_load_template_contents( $result, $query, $template_type ) {
+	public function lazy_load_requested_templates_content( $result, $query, $template_type ) {
 		if ( 'wp_template' === $template_type && ! empty( $this->template_paths ) ) {
 			// On front-end pages slug__in defines the target slugs; in other contexts we need to load all templates.
 			$target_slugs = array_map( static fn( $slug ) => 'woocommerce//' . $slug, $query['slug__in'] ?? array() );
@@ -164,6 +165,21 @@ class BlockTemplatesRegistry {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Covers the singular resolution path (get_block_file_template) which bypasses get_block_templates() entirely.
+	 *
+	 * @since 11.3.0
+	 * @internal
+	 *
+	 * @param mixed  $result        Pass-through (null to let WP continue).
+	 * @param string $id            Template identifier (e.g. 'theme_name//slug').
+	 * @param string $template_type Template type.
+	 * @return mixed Unmodified $result.
+	 */
+	public function lazy_load_single_template_content( $result, $id, $template_type ) {
+		return $this->lazy_load_requested_templates_content( $result, array( 'slug__in' => (array) ( explode( '//', $id, 2 )[1] ?? null ) ), $template_type );
 	}
 
 	/**
