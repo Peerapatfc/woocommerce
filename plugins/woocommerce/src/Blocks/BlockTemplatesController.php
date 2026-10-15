@@ -61,14 +61,16 @@ class BlockTemplatesController {
 		// Upstream render_block_core_template_part can't resolve plugin-shipped template parts. This intercepts only woocommerce/woocommerce
 		// parts via pre_render_block; non-WooCommerce parts (header, footer, etc.) reach core directly with zero overhead.
 		if ( null === $pre_render && 'core/template-part' === ( $parsed_block['blockName'] ?? null ) && 'woocommerce/woocommerce' === ( $parsed_block['attrs']['theme'] ?? null ) ) {
+			global $post;
+
 			// BC (block_type_metadata_settings → pre_render_block migration): re-apply render_block() input filters.
 			// Skipped: enqueue_empty_block_content_assets (template parts always have content).
 			$parsed_block = apply_filters( 'render_block_data', $parsed_block, $parsed_block, null ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
-			$context      = apply_filters( 'render_block_context', array(), $parsed_block, null ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
+			$context      = $post instanceof \WP_Post ? array( 'postId' => $post->ID, 'postType' => $post->post_type ) : array();
+			$context      = apply_filters( 'render_block_context', $context, $parsed_block, null ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
 
-			$attributes = $parsed_block['attrs'];
-			if ( isset( $attributes['theme'], $attributes['slug'] ) ) {
-				$template_part = get_block_template( $attributes['theme'] . '//' . $attributes['slug'], 'wp_template_part' );
+			if ( is_array( $context ) && is_array( $parsed_block ) && isset( $parsed_block['attrs']['theme'], $parsed_block['attrs']['slug'] ) ) {
+				$template_part = get_block_template( $parsed_block['attrs']['theme'] . '//' . $parsed_block['attrs']['slug'], 'wp_template_part' );
 				if ( $template_part && ! empty( $template_part->content ) ) {
 					$content = do_blocks( $template_part->content );
 
@@ -76,7 +78,7 @@ class BlockTemplatesController {
 					list( $previous_block, \WP_Block_Supports::$block_to_render )     = array( \WP_Block_Supports::$block_to_render, $parsed_block );
 					list( $wrapper_attributes, \WP_Block_Supports::$block_to_render ) = array( get_block_wrapper_attributes(), $previous_block );
 
-					$html_tag      = $attributes['tagName'] ?? null;
+					$html_tag      = $parsed_block['attrs']['tagName'] ?? null;
 					$html_tag      = ( $html_tag && tag_escape( $html_tag ) === $html_tag ) ? esc_attr( $html_tag ) : 'div';
 					$block_content = "<$html_tag $wrapper_attributes>" . str_replace( ']]>', ']]&gt;', $content ) . "</$html_tag>";
 
