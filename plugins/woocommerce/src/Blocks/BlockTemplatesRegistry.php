@@ -173,6 +173,7 @@ class BlockTemplatesRegistry {
 		if ( 'wp_template' === $template_type && $template && 'woocommerce' === ( $template->plugin ?? null ) ) {
 			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
 			if ( null !== $template_path && '' === $template->content ) {
+				// Re-apply block hooks on both path-ways: core already ran this on empty content before the filter fired.
 				$template->content = apply_block_hooks_to_content(
 					(string) file_get_contents( $template_path ), // phpcs:ignore WordPress.WP.AlternativeFunctions
 					$template,
