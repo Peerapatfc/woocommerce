@@ -110,10 +110,9 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		// Lazy-load template content into two independent core resolution paths:
-		// - get_block_templates (plural): template listings, editor, REST. Path: DB → theme files → registry → get_block_templates filter.
-		add_filter( 'get_block_templates', array( $this, 'populate_block_file_template_contents' ), 11, 3 );
-		// - get_block_file_template (singular fallback): front-end rendering. Path: get_block_template → get_block_file_template → registry get_by_slug → get_block_file_template filter.
+		// Lazy-load template content via two independent core resolution paths (plural for listings/editor/REST, singular for front-end rendering).
+		add_filter( 'get_block_templates', array( $this, 'populate_contents_for_get_block_templates'), 11, 3 );
+		add_filter( 'get_block_file_template', array( $this, 'populate_contents_for_get_block_template'), 11, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -143,27 +142,47 @@ class BlockTemplatesRegistry {
 	 * Lazily inject template content into query results (covers resolve_block_template path).
 	 *
 	 * @since 11.3.0
+	 * @internal
 	 *
 	 * @param \WP_Block_Template[] $templates     Array of found block templates.
 	 * @param array                $query         Query arguments.
 	 * @param string               $template_type Template type.
 	 * @return \WP_Block_Template[]
 	 */
-	public function populate_block_file_template_contents( $templates, $query, $template_type ) {
+	public function populate_contents_for_get_block_templates( $templates, $query, $template_type ) {
 		if ( 'wp_template' === $template_type ) {
 			foreach ( $templates as $template ) {
-				$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
-				if ( null !== $template_path && '' === $template->content && 'woocommerce' === ( $template->plugin ?? null ) ) {
-					$template->content = apply_block_hooks_to_content(
-						(string) file_get_contents( $template_path ), // phpcs:ignore WordPress.WP.AlternativeFunctions
-						$template,
-						'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
-					);
-				}
+				$this->populate_contents_for_get_block_template( $template, '', $template_type );
 			}
 		}
 
 		return $templates;
+	}
+
+	/**
+	 * Lazily inject template content for a single template (covers get_block_file_template fallback path).
+	 *
+	 * @since 11.3.0
+	 * @internal
+	 *
+	 * @param \WP_Block_Template|null $template      The resolved template, or null.
+	 * @param string                  $id            Template identifier (e.g. 'theme_name//slug').
+	 * @param string                  $template_type Template type.
+	 * @return \WP_Block_Template|null
+	 */
+	public function populate_contents_for_get_block_template( $template, $id, $template_type ) {
+		if ( 'wp_template' === $template_type && 'woocommerce' === ( $template->plugin ?? null ) ) {
+			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
+			if ( null !== $template_path && '' === $template->content) {
+				$template->content = apply_block_hooks_to_content(
+					(string) file_get_contents( $template_path ), // phpcs:ignore WordPress.WP.AlternativeFunctions
+					$template,
+					'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
+				);
+			}
+		}
+
+		return $template;
 	}
 
 	/**
