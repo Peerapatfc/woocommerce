@@ -149,11 +149,12 @@ class BlockTemplatesRegistry {
 	 * @return \WP_Block_Template[]
 	 */
 	public function populate_block_file_template_contents( $templates, $query, $template_type ) {
-		foreach ( $templates as $template ) {
-			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
-			if ( null !== $template_path && '' === $template->content ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-				$template->content = (string) file_get_contents( $template_path );
+		if ( 'wp_template' === $template_type ) {
+			foreach ( $templates as $template ) {
+				$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
+				if ( null !== $template_path && '' === $template->content ) {
+					$template->content = (string) file_get_contents( $template_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+				}
 			}
 		}
 
@@ -168,6 +169,6 @@ class BlockTemplatesRegistry {
 	 * @return AbstractTemplate|AbstractTemplatePart|null
 	 */
 	public function get_template( $template_slug ) {
-		return $this->templates[$template_slug] ?? null;
+		return $this->templates[ $template_slug ] ?? null;
 	}
 }
