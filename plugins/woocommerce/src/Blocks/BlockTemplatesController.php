@@ -67,7 +67,7 @@ class BlockTemplatesController {
 			// BC (block_type_metadata_settings → pre_render_block migration): re-apply render_block() input filters.
 			// Skipped: enqueue_empty_block_content_assets (template parts always have content).
 			$parsed_block = apply_filters( 'render_block_data', $parsed_block, $parsed_block, $parent_block ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
-			$context      = $post instanceof \WP_Post ? array( 'postId' => $post->ID, 'postType' => $post->post_type ) : array();
+			$context      = $post instanceof \WP_Post ? array( 'postId' => $post->ID, 'postType' => $post->post_type ) : array(); // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing
 			$context      = apply_filters( 'render_block_context', $context, $parsed_block, $parent_block ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
 
 			if ( is_array( $context ) && is_array( $parsed_block ) && isset( $parsed_block['attrs']['theme'], $parsed_block['attrs']['slug'] ) ) {
