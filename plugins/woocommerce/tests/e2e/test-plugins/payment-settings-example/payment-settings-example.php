@@ -35,6 +35,11 @@ add_action(
 			array(
 				'methods'             => array( 'GET', 'POST' ),
 				'permission_callback' => static fn() => current_user_can( 'manage_woocommerce' ),
+				// The schema turns strings such as "false" into booleans and rejects values that aren't booleans.
+				'args'                => array(
+					'enabled' => array( 'type' => 'boolean' ),
+					'debug'   => array( 'type' => 'boolean' ),
+				),
 				'callback'            => static function ( WP_REST_Request $request ) {
 					$defaults = array(
 						'enabled' => false,
