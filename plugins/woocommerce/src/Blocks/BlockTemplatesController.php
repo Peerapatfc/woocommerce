@@ -25,7 +25,7 @@ class BlockTemplatesController {
 	 */
 	public function init() {
 		add_filter( 'pre_get_block_file_template', array( $this, 'get_block_file_template' ), 10, 3 );
-		add_filter( 'pre_render_block', array( $this, 'pre_render_woocommerce_template_part' ), 10, 2 );
+		add_filter( 'pre_render_block', array( $this, 'pre_render_woocommerce_template_part' ), 10, 3 );
 		add_filter( 'get_block_template', array( $this, 'add_block_template_details' ), 10, 3 );
 		add_filter( 'get_block_templates', array( $this, 'add_db_templates_with_woo_slug' ), 10, 3 );
 		add_filter( 'rest_pre_insert_wp_template', array( $this, 'dont_load_templates_for_suggestions' ), 10, 1 );
@@ -53,11 +53,12 @@ class BlockTemplatesController {
 	 * @since 11.3.0
 	 * @internal
 	 *
-	 * @param string|null $pre_render   The pre-rendered content, or null to let the block render normally.
-	 * @param array       $parsed_block The block being rendered.
+	 * @param string|null   $pre_render   The pre-rendered content, or null to let the block render normally.
+	 * @param array         $parsed_block The block being rendered.
+	 * @param WP_Block|null $parent_block The parent block, if any.
 	 * @return string|null
 	 */
-	public function pre_render_woocommerce_template_part( $pre_render, $parsed_block ) {
+	public function pre_render_woocommerce_template_part( $pre_render, $parsed_block, $parent_block = null ) {
 		// Upstream render_block_core_template_part can't resolve plugin-shipped template parts. This intercepts only woocommerce/woocommerce
 		// parts via pre_render_block; non-WooCommerce parts (header, footer, etc.) reach core directly with zero overhead.
 		if ( null === $pre_render && 'core/template-part' === ( $parsed_block['blockName'] ?? null ) && 'woocommerce/woocommerce' === ( $parsed_block['attrs']['theme'] ?? null ) ) {
@@ -65,9 +66,9 @@ class BlockTemplatesController {
 
 			// BC (block_type_metadata_settings → pre_render_block migration): re-apply render_block() input filters.
 			// Skipped: enqueue_empty_block_content_assets (template parts always have content).
-			$parsed_block = apply_filters( 'render_block_data', $parsed_block, $parsed_block, null ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
+			$parsed_block = apply_filters( 'render_block_data', $parsed_block, $parsed_block, $parent_block ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
 			$context      = $post instanceof \WP_Post ? array( 'postId' => $post->ID, 'postType' => $post->post_type ) : array();
-			$context      = apply_filters( 'render_block_context', $context, $parsed_block, null ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
+			$context      = apply_filters( 'render_block_context', $context, $parsed_block, $parent_block ); // phpcs:ignore WooCommerce.Commenting.CommentHooks
 
 			if ( is_array( $context ) && is_array( $parsed_block ) && isset( $parsed_block['attrs']['theme'], $parsed_block['attrs']['slug'] ) ) {
 				$template_part = get_block_template( $parsed_block['attrs']['theme'] . '//' . $parsed_block['attrs']['slug'], 'wp_template_part' );
