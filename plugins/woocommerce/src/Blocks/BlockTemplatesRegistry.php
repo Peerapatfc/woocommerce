@@ -109,9 +109,8 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		// Lazy-load template content via two independent core resolution paths (plural for listings/editor/REST, singular for front-end rendering).
-		add_filter( 'get_block_templates', array( $this, 'populate_contents_for_get_block_templates' ), 11, 3 );
-		add_filter( 'get_block_file_template', array( $this, 'populate_contents_for_get_block_file_template' ), 11, 3 );
+		// Hydrate registered template content on first query — before the main resolution and any get_block_templates callbacks.
+		add_filter( 'pre_get_block_templates', array( $this, 'lazy_load_template_contents'), 0, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -138,51 +137,34 @@ class BlockTemplatesRegistry {
 	}
 
 	/**
-	 * Lazily inject template content into query results (covers resolve_block_template path).
+	 * Lazily load registered WooCommerce template file contents into the registry.
 	 *
 	 * @since 11.3.0
 	 * @internal
 	 *
-	 * @param \WP_Block_Template[] $templates     Array of found block templates.
-	 * @param array                $query         Query arguments.
-	 * @param string               $template_type Template type.
-	 * @return \WP_Block_Template[]
+	 * @param mixed  $result        Pass-through (null to let WP continue).
+	 * @param array  $query         Query arguments.
+	 * @param string $template_type Template type.
+	 * @return mixed Unmodified $result.
 	 */
-	public function populate_contents_for_get_block_templates( $templates, $query, $template_type ) {
-		if ( 'wp_template' === $template_type ) {
-			foreach ( $templates as $template ) {
-				$this->populate_contents_for_get_block_file_template( $template, '', $template_type );
+	public function lazy_load_template_contents( $result, $query, $template_type ) {
+		if ( 'wp_template' === $template_type && ! empty( $this->template_paths ) ) {
+			// On front-end pages slug__in defines the target slugs; in other contexts we need to load all templates.
+			$target_slugs = array_map( static fn( $slug ) => 'woocommerce//' . $slug, $query['slug__in'] ?? array() );
+			$target_slugs = empty( $target_slugs ) ? $this->template_paths : array_intersect_key( $this->template_paths, array_flip( $target_slugs ) );
+			if ( ! empty( $target_slugs ) ) {
+				$registry = \WP_Block_Templates_Registry::get_instance();
+				foreach ( $target_slugs as $name => $path ) {
+					$template = $registry->get_registered( $name );
+					if ( $template && '' === $template->content && 'woocommerce' === ( $template->plugin ?? null ) ) {
+						$template->content = (string) file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+						unset( $this->template_paths[ $name ] );
+					}
+				}
 			}
 		}
 
-		return $templates;
-	}
-
-	/**
-	 * Lazily inject template content for a single template (covers get_block_file_template fallback path).
-	 *
-	 * @since 11.3.0
-	 * @internal
-	 *
-	 * @param \WP_Block_Template|null $template      The resolved template, or null.
-	 * @param string                  $id            Template identifier (e.g. 'theme_name//slug').
-	 * @param string                  $template_type Template type.
-	 * @return \WP_Block_Template|null
-	 */
-	public function populate_contents_for_get_block_file_template( $template, $id, $template_type ) {
-		if ( 'wp_template' === $template_type && $template && 'woocommerce' === ( $template->plugin ?? null ) ) {
-			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
-			if ( null !== $template_path && '' === $template->content ) {
-				// Re-apply block hooks on both path-ways: core already ran this on empty content before the filter fired.
-				$template->content = apply_block_hooks_to_content(
-					(string) file_get_contents( $template_path ), // phpcs:ignore WordPress.WP.AlternativeFunctions
-					$template,
-					'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
-				);
-			}
-		}
-
-		return $template;
+		return $result;
 	}
 
 	/**
