@@ -112,7 +112,7 @@ class BlockTemplatesRegistry {
 		}
 		// Lazy-load template content via two independent core resolution paths (plural for listings/editor/REST, singular for front-end rendering).
 		add_filter( 'get_block_templates', array( $this, 'populate_contents_for_get_block_templates' ), 11, 3 );
-		add_filter( 'get_block_file_template', array( $this, 'populate_contents_for_get_block_template' ), 11, 3 );
+		add_filter( 'get_block_file_template', array( $this, 'populate_contents_for_get_block_file_template' ), 11, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
@@ -152,7 +152,7 @@ class BlockTemplatesRegistry {
 	public function populate_contents_for_get_block_templates( $templates, $query, $template_type ) {
 		if ( 'wp_template' === $template_type ) {
 			foreach ( $templates as $template ) {
-				$this->populate_contents_for_get_block_template( $template, '', $template_type );
+				$this->populate_contents_for_get_block_file_template( $template, '', $template_type );
 			}
 		}
 
@@ -170,7 +170,7 @@ class BlockTemplatesRegistry {
 	 * @param string                  $template_type Template type.
 	 * @return \WP_Block_Template|null
 	 */
-	public function populate_contents_for_get_block_template( $template, $id, $template_type ) {
+	public function populate_contents_for_get_block_file_template( $template, $id, $template_type ) {
 		if ( 'wp_template' === $template_type && 'woocommerce' === ( $template->plugin ?? null ) ) {
 			$template_path = $this->template_paths[ 'woocommerce//' . $template->slug ] ?? null;
 			if ( null !== $template_path && '' === $template->content ) {
