@@ -109,7 +109,7 @@ class BlockTemplatesRegistry {
 				);
 			}
 		}
-		add_filter( 'pre_get_block_templates', array( $this, 'lazy_load_template_contents'), 0, 3 );
+		add_filter( 'pre_get_block_templates', array( $this, 'lazy_load_template_contents' ), 0, 3 );
 
 		foreach ( $template_parts as $template_part ) {
 			$template_part->init();
